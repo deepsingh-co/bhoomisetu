@@ -1,0 +1,265 @@
+// Prisma Schema for Bhulekh AI v3 — Citizen Portal, Verification & Land Intelligence
+// Compliant with Government of India, DILRMP & NIC Architecture
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum RoleType {
+  SUPER_ADMIN
+  STATE_ADMIN
+  DISTRICT_COLLECTOR
+  GOVERNMENT_OFFICER
+  VERIFICATION_OFFICER
+  SURVEY_OFFICER
+  CITIZEN
+}
+
+enum CertificateStatus {
+  VALID
+  EXPIRED
+  REVOKED
+  TAMPERED
+}
+
+enum CorrectionType {
+  OWNER_NAME
+  AREA
+  BOUNDARY
+  MUTATION
+  DUPLICATE
+  DOCUMENT_UPLOAD
+}
+
+enum CorrectionStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  FIELD_VERIFICATION
+  RESOLVED
+  REJECTED
+}
+
+enum GrievanceCategory {
+  LAND_RECORD_ISSUE
+  VERIFICATION_DELAY
+  FRAUD_REPORT
+  GIS_ERROR
+  MUTATION_DELAY
+  TECHNICAL_ISSUE
+}
+
+enum GrievanceStatus {
+  OPEN
+  INVESTIGATING
+  ACTION_TAKEN
+  CLOSED
+}
+
+enum PriorityLevel {
+  URGENT
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum DocumentFolder {
+  VERIFIED_RECORDS
+  DOWNLOADED_REPORTS
+  PENDING_DOCS
+  SHARED_CERTS
+  FAVORITES
+}
+
+model CitizenProfile {
+  id                String   @id @default(uuid())
+  aadharMasked      String   @map("aadhar_masked")
+  phone             String   @unique
+  fullName          String   @map("full_name")
+  email             String?
+  district          String   @default("Pune")
+  taluka            String   @default("Haveli")
+  village           String   @default("Wagholi")
+  preferredLanguage String   @default("en") @map("preferred_language")
+  isOtpVerified     Boolean  @default(true) @map("is_otp_verified")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  savedSearches      SavedSearch[]
+  voiceSearches      VoiceSearchLog[]
+  correctionRequests CorrectionRequest[]
+  grievances         GrievanceTicket[]
+  documents          CitizenDocument[]
+  notifications      NotificationHistory[]
+  downloads          DownloadHistory[]
+  portfolioParcels   PortfolioParcel[]
+
+  @@map("citizen_profiles")
+}
+
+model SavedSearch {
+  id           String         @id @default(uuid())
+  citizenId    String         @map("citizen_id")
+  citizen      CitizenProfile @relation(fields: [citizenId], references: [id], onDelete: Cascade)
+  searchType   String         @map("search_type")
+  query        String
+  filters      Json?
+  resultsCount Int            @default(0) @map("results_count")
+  createdAt    DateTime       @default(now()) @map("created_at")
+
+  @@map("saved_searches")
+}
+
+model VoiceSearchLog {
+  id                String         @id @default(uuid())
+  citizenId         String?        @map("citizen_id")
+  citizen           CitizenProfile? @relation(fields: [citizenId], references: [id], onDelete: SetNull)
+  language          String         @default("hi")
+  rawTranscript     String         @map("raw_transcript")
+  structuredFilters Json           @map("structured_filters")
+  parsedSurvey      String?        @map("parsed_survey")
+  parsedVillage     String?        @map("parsed_village")
+  matchedCount      Int            @default(0) @map("matched_count")
+  timestamp         DateTime       @default(now())
+
+  @@map("voice_search_logs")
+}
+
+model TrustCertificate {
+  id                 String            @id @default(uuid())
+  certificateNumber  String            @unique @map("certificate_number")
+  parcelUid          String            @map("parcel_uid")
+  ownerName          String            @map("owner_name")
+  surveyNumber       String            @map("survey_number")
+  village            String
+  district           String
+  areaHectares       Float             @map("area_hectares")
+  trustScore         Int               @map("trust_score")
+  aiConfidence       Float             @map("ai_confidence")
+  officerVerifiedBy  String            @map("officer_verified_by")
+  qrHash             String            @unique @map("qr_hash")
+  digitalSignature   String            @map("digital_signature")
+  issuedAt           DateTime          @default(now()) @map("issued_at")
+  expiresAt          DateTime          @map("expires_at")
+  status             CertificateStatus @default(VALID)
+
+  @@map("trust_certificates")
+}
+
+model CorrectionRequest {
+  id                  String           @id @default(uuid())
+  trackingId          String           @unique @map("tracking_id")
+  citizenId           String           @map("citizen_id")
+  citizen             CitizenProfile   @relation(fields: [citizenId], references: [id], onDelete: Cascade)
+  parcelUid           String           @map("parcel_uid")
+  requestType         CorrectionType   @map("request_type")
+  currentDetails      String           @map("current_details")
+  requestedCorrection String           @map("requested_correction")
+  evidenceFiles       Json?            @map("evidence_files")
+  status              CorrectionStatus @default(SUBMITTED)
+  assignedOfficer     String?          @map("assigned_officer")
+  officerRemarks      String?          @map("officer_remarks")
+  citizenReplies      Json?            @map("citizen_replies")
+  submittedAt         DateTime         @default(now()) @map("submitted_at")
+  updatedAt           DateTime         @updatedAt @map("updated_at")
+
+  @@map("correction_requests")
+}
+
+model GrievanceTicket {
+  id                 String            @id @default(uuid())
+  ticketNumber       String            @unique @map("ticket_number")
+  citizenId          String            @map("citizen_id")
+  citizen            CitizenProfile    @relation(fields: [citizenId], references: [id], onDelete: Cascade)
+  category           GrievanceCategory
+  subject            String
+  description        String
+  priority           PriorityLevel     @default(MEDIUM)
+  status             GrievanceStatus   @default(OPEN)
+  assignedOfficer    String?           @map("assigned_officer")
+  resolutionNotes    String?           @map("resolution_notes")
+  satisfactionRating Int?              @map("satisfaction_rating")
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime          @updatedAt @map("updated_at")
+
+  @@map("grievance_tickets")
+}
+
+model CitizenDocument {
+  id               String         @id @default(uuid())
+  citizenId        String         @map("citizen_id")
+  citizen          CitizenProfile @relation(fields: [citizenId], references: [id], onDelete: Cascade)
+  parcelUid        String         @map("parcel_uid")
+  title            String
+  documentType     String         @map("document_type")
+  folder           DocumentFolder @default(VERIFIED_RECORDS)
+  fileSize         String         @map("file_size")
+  fileFormat       String         @default("PDF") @map("file_format")
+  downloadUrl      String         @map("download_url")
+  verificationHash String         @map("verification_hash")
+  qrCodeUrl        String?        @map("qr_code_url")
+  isArchived       Boolean        @default(false) @map("is_archived")
+  isFavorite       Boolean        @default(false) @map("is_favorite")
+  issuedAt         DateTime       @default(now()) @map("issued_at")
+
+  @@map("citizen_documents")
+}
+
+model NotificationHistory {
+  id        String         @id @default(uuid())
+  citizenId String         @map("citizen_id")
+  citizen   CitizenProfile @relation(fields: [citizenId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String
+  priority  PriorityLevel  @default(MEDIUM)
+  isRead    Boolean        @default(false) @map("is_read")
+  isArchive Boolean        @default(false) @map("is_archive")
+  actionUrl String?        @map("action_url")
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  @@map("notification_history")
+}
+
+model DownloadHistory {
+  id            String         @id @default(uuid())
+  citizenId     String         @map("citizen_id")
+  citizen       CitizenProfile @relation(fields: [citizenId], references: [id], onDelete: Cascade)
+  documentTitle String         @map("document_title")
+  documentType  String         @map("document_type")
+  parcelUid     String         @map("parcel_uid")
+  ipAddress     String         @map("ip_address")
+  downloadedAt  DateTime       @default(now()) @map("downloaded_at")
+
+  @@map("download_history")
+}
+
+model QrVerificationLog {
+  id                 String            @id @default(uuid())
+  qrHash             String            @map("qr_hash")
+  parcelUid          String?           @map("parcel_uid")
+  verificationResult CertificateStatus @map("verification_result")
+  scannedAt          DateTime          @default(now()) @map("scanned_at")
+  ipAddress          String            @map("ip_address")
+  userAgent          String?           @map("user_agent")
+  notes              String?
+
+  @@map("qr_verification_logs")
+}
+
+model PortfolioParcel {
+  id            String         @id @default(uuid())
+  citizenId     String         @map("citizen_id")
+  citizen       CitizenProfile @relation(fields: [citizenId], references: [id], onDelete: Cascade)
+  parcelUid     String         @map("parcel_uid")
+  ownershipType String         @default("OWNED") @map("ownership_type") // OWNED, INHERITED, PENDING_MUTATION
+  isFavorite    Boolean        @default(false) @map("is_favorite")
+  addedAt       DateTime       @default(now()) @map("added_at")
+
+  @@unique([citizenId, parcelUid])
+  @@map("portfolio_parcels")
+}
