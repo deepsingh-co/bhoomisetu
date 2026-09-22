@@ -51,7 +51,7 @@ export const GovernmentHeader: React.FC<GovernmentHeaderProps> = ({
       <TricolorRibbon />
 
       {/* Top Accessibility and Utility Strip */}
-      <div className="bg-[#F5F7FA] border-b border-[#D8DEE8] py-1 px-4 sm:px-8 text-xs text-[#5A6878]">
+      <div className="bg-[#F5F7FA] border-b border-[#D8DEE8] py-1 px-3 sm:px-8 text-xs text-[#5A6878]">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
           {/* Official Portal Subtitle & Date */}
           <div className="flex items-center gap-3">

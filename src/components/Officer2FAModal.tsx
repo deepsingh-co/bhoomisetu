@@ -209,7 +209,7 @@ export const Officer2FAModal: React.FC<Officer2FAModalProps> = ({
               <label className="block text-xs font-bold text-[#1C2733] mb-2 text-center">
                 Enter 6-Digit One-Time Security Code
               </label>
-              <div className="flex justify-center gap-2 sm:gap-3" onPaste={handlePaste}>
+              <div className="flex justify-center gap-1.5 sm:gap-2.5" onPaste={handlePaste}>
                 {otpDigits.map((digit, idx) => (
                   <input
                     key={idx}
@@ -223,7 +223,7 @@ export const Officer2FAModal: React.FC<Officer2FAModalProps> = ({
                     value={digit}
                     onChange={(e) => handleDigitChange(idx, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(idx, e)}
-                    className="w-10 h-12 sm:w-11 sm:h-13 text-center text-lg font-bold font-mono bg-white border-2 border-[#D8DEE8] rounded-md text-[#1C2733] focus:outline-none focus:border-[#123A78] focus:ring-1 focus:ring-[#123A78]"
+                    className="w-8 h-10 sm:w-10 sm:h-12 md:w-11 md:h-13 text-center text-base sm:text-lg font-bold font-mono bg-white border-2 border-[#D8DEE8] rounded-md text-[#1C2733] focus:outline-none focus:border-[#123A78] focus:ring-1 focus:ring-[#123A78]"
                   />
                 ))}
               </div>

@@ -20,6 +20,8 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { LandRecordType } from '../types/landRecords';
+import { ScannedLandRecordDocument } from './ScannedLandRecordDocument';
+import { INITIAL_PARCELS } from '../data/seedParcels';
 
 interface UploadCenterViewProps {
   onDocumentUploaded: (documentId: string) => void;
@@ -391,9 +393,7 @@ export const UploadCenterView: React.FC<UploadCenterViewProps> = ({
 
   const captureDocumentScan = () => {
     // Generate scanned document representation
-    setCapturedImage(
-      'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&auto=format&fit=crop&q=80'
-    );
+    setCapturedImage('LAND_RECORD_DOC_712');
     stopCamera();
   };
 
@@ -906,18 +906,16 @@ export const UploadCenterView: React.FC<UploadCenterViewProps> = ({
               {/* Left 2 Cols: Viewport */}
               <div className="lg:col-span-2 relative bg-gray-950 rounded-xl overflow-hidden min-h-[380px] flex items-center justify-center border-2 border-gray-800 shadow-inner">
                 {capturedImage ? (
-                  <div className="relative w-full h-full flex items-center justify-center p-4">
-                    <img
-                      src={capturedImage}
-                      alt="Captured Land Record"
-                      className="max-h-[360px] object-contain rounded border-2 border-[#0B7A3B] shadow-lg"
-                      style={{
-                        filter: `contrast(${contrastLevel}%) ${perspectiveCorrected ? 'none' : 'skew(2deg)'}`,
-                      }}
-                    />
-                    <div className="absolute top-4 left-4 bg-[#0B7A3B] text-white px-2.5 py-1 rounded text-xs font-bold flex items-center gap-1 shadow-md">
+                  <div className="relative w-full h-full max-h-[460px] overflow-auto flex items-start justify-center p-3 bg-gray-900">
+                    <div className="w-full max-w-[620px] origin-top scale-[0.85] sm:scale-100">
+                      <ScannedLandRecordDocument
+                        parcel={INITIAL_PARCELS[0]}
+                        mode="712-ror"
+                      />
+                    </div>
+                    <div className="absolute top-4 left-4 bg-[#0B7A3B] text-white px-2.5 py-1 rounded text-xs font-bold flex items-center gap-1 shadow-md z-10">
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>Cadastral Boundary Locked</span>
+                      <span>Cadastral 7/12 Boundary Calibrated</span>
                     </div>
                   </div>
                 ) : (

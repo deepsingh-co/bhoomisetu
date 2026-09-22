@@ -175,7 +175,7 @@ export const CitizenOtpModal: React.FC<CitizenOtpModalProps> = ({
               <label className="block text-xs font-bold text-[#1C2733] mb-2 text-center">
                 Enter 6-Digit OTP
               </label>
-              <div className="flex justify-center gap-2">
+              <div className="flex justify-center gap-1.5 sm:gap-2.5">
                 {otpDigits.map((digit, idx) => (
                   <input
                     key={idx}
@@ -189,7 +189,7 @@ export const CitizenOtpModal: React.FC<CitizenOtpModalProps> = ({
                     value={digit}
                     onChange={(e) => handleDigitChange(idx, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(idx, e)}
-                    className="w-10 h-12 text-center text-lg font-bold font-mono bg-white border-2 border-[#D8DEE8] rounded-md text-[#1C2733] focus:outline-none focus:border-[#123A78] focus:ring-1 focus:ring-[#123A78]"
+                    className="w-8 h-10 sm:w-10 sm:h-12 text-center text-base sm:text-lg font-bold font-mono bg-white border-2 border-[#D8DEE8] rounded-md text-[#1C2733] focus:outline-none focus:border-[#123A78] focus:ring-1 focus:ring-[#123A78]"
                   />
                 ))}
               </div>
