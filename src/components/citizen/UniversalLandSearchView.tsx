@@ -12,6 +12,7 @@ import {
   Sparkles,
   RefreshCw,
   Compass,
+  Mic,
 } from 'lucide-react';
 import { CitizenActiveTab, CitizenParcel } from '../../types/citizen';
 
@@ -107,8 +108,17 @@ export const UniversalLandSearchView: React.FC<UniversalLandSearchViewProps> = (
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && executeSearch()}
                 placeholder="Enter Survey No (e.g. 142), Owner Name (e.g. Patil), Khata No, or 'Verified land in Wagholi'..."
-                className="w-full pl-10 pr-4 py-3 border border-[#D8DEE8] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#123A78] focus:border-transparent"
+                className="w-full pl-10 pr-24 py-3 border border-[#D8DEE8] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#123A78] focus:border-transparent"
               />
+              <button
+                type="button"
+                onClick={() => onNavigate('voice')}
+                title="Voice Command Search (माइक से खोजें)"
+                className="absolute right-2 top-1/2 -translate-y-1/2 px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#123A78] rounded-md transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-semibold border border-blue-200"
+              >
+                <Mic className="w-3.5 h-3.5 text-[#0B7A3B]" />
+                <span>Voice</span>
+              </button>
             </div>
 
             <button
@@ -368,6 +378,14 @@ export const UniversalLandSearchView: React.FC<UniversalLandSearchViewProps> = (
                 </button>
 
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => onNavigate('map', parcel.parcelUid)}
+                    className="text-xs bg-[#0B7A3B] hover:bg-[#086330] text-white px-2.5 py-1.5 rounded-md font-semibold flex items-center gap-1 transition-colors shadow-2xs cursor-pointer"
+                    title="View real satellite boundary, corners, and plot navigation"
+                  >
+                    <Layers className="w-3.5 h-3.5" />
+                    <span>GIS Satellite</span>
+                  </button>
                   <button
                     onClick={() => onNavigate('timeline', parcel.parcelUid)}
                     className="text-xs border border-gray-300 hover:bg-gray-100 text-gray-700 px-2.5 py-1.5 rounded-md font-medium transition-colors"

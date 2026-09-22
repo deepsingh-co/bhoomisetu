@@ -1,5 +1,5 @@
 // ============================================================================
-// Bhulekh AI v3 — Module 5: National Command Center In-Memory Datastore
+// BhoomiSetu — Module 5: National Command Center In-Memory Datastore
 // National Informatics Centre (NIC) & Department of Land Resources
 // ============================================================================
 

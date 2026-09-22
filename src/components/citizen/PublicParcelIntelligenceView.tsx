@@ -228,10 +228,12 @@ export const PublicParcelIntelligenceView: React.FC<PublicParcelIntelligenceView
             </div>
 
             <button
-              onClick={() => onNavigate('map')}
-              className="w-full bg-blue-50 border border-blue-200 hover:bg-blue-100 text-[#123A78] text-xs font-bold py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              onClick={() => onNavigate('map', parcelData?.parcelUid || parcelId)}
+              className="w-full bg-[#0B7A3B] hover:bg-[#086330] text-white text-xs font-bold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
             >
-              Open Full GIS Map Studio <ExternalLink className="w-3.5 h-3.5" />
+              <Layers className="w-4 h-4" />
+              <span>Open Full Satellite & Boundary Studio</span>
+              <ExternalLink className="w-3.5 h-3.5 ml-0.5" />
             </button>
           </div>
 

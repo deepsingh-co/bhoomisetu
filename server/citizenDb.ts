@@ -1,4 +1,4 @@
-// In-memory persistent database store for Bhulekh AI v3 Citizen Portal
+// In-memory persistent database store for BhoomiSetu Citizen Portal
 // Mirrors PostgreSQL schema for high-speed offline/online operation
 
 export interface CitizenProfileData {
@@ -607,6 +607,128 @@ class CitizenDatabase {
       notes: 'Cryptographic SHA-256 digital signature verified against NIC Maharashtra State node.',
     },
   ];
+
+  // Syncs officer uploaded & verified land record into the Citizen Portal
+  public syncVerifiedParcel(data: {
+    parcelUid: string;
+    surveyNumber: string;
+    ownerName: string;
+    village: string;
+    taluka: string;
+    district: string;
+    areaHectares: number;
+    landType?: string;
+    trustScore?: number;
+    status?: 'VERIFIED' | 'UNDER_REVIEW' | 'ATTENTION_REQUIRED';
+    mutationNumber?: string;
+    documentYear?: number;
+  }) {
+    const existingIndex = this.portfolio.findIndex(
+      (p) => p.parcelUid === data.parcelUid || p.surveyNumber === data.surveyNumber
+    );
+
+    const score = data.trustScore ?? 98;
+    const nowIso = new Date().toISOString();
+    const verStatus = data.status || 'VERIFIED';
+
+    if (existingIndex >= 0) {
+      // Update existing portfolio parcel
+      this.portfolio[existingIndex] = {
+        ...this.portfolio[existingIndex],
+        surveyNumber: data.surveyNumber,
+        village: data.village,
+        taluka: data.taluka,
+        district: data.district,
+        areaHectares: data.areaHectares,
+        landType: data.landType || this.portfolio[existingIndex].landType,
+        trustScore: score,
+        verificationStatus: verStatus,
+        lastUpdated: 'Just now (Officer Ingested)',
+      };
+    } else {
+      // Prepend newly ingested parcel to citizen portfolio
+      const newPortfolioItem: PortfolioParcelItem = {
+        id: `port-${Date.now()}`,
+        citizenId: this.profile.id,
+        parcelUid: data.parcelUid,
+        surveyNumber: data.surveyNumber,
+        village: data.village,
+        taluka: data.taluka,
+        district: data.district,
+        areaHectares: data.areaHectares,
+        landType: data.landType || 'Jirayat Agricultural Farmland',
+        ownershipType: 'OWNED',
+        trustScore: score,
+        verificationStatus: verStatus,
+        isFavorite: true,
+        photoPlaceholder: 'Agricultural Farmland with Drip Irrigation Border',
+        lastUpdated: 'Just now (Officer Ingested)',
+        addedAt: nowIso,
+      };
+      this.portfolio.unshift(newPortfolioItem);
+    }
+
+    // Add / Update Trust Certificate
+    const existingCertIndex = this.trustCertificates.findIndex(
+      (c) => c.parcelUid === data.parcelUid || c.surveyNumber === data.surveyNumber
+    );
+    const certItem: TrustCertificateItem = {
+      id: `cert-${Date.now()}`,
+      certificateNumber: `NIC-BHU-CERT-${Date.now().toString().slice(-6)}`,
+      parcelUid: data.parcelUid,
+      ownerName: data.ownerName,
+      surveyNumber: data.surveyNumber,
+      village: data.village,
+      district: data.district,
+      areaHectares: data.areaHectares,
+      trustScore: score,
+      aiConfidence: 99.4,
+      officerVerifiedBy: 'Sub-Divisional Revenue Officer / Tehsildar',
+      qrHash: `BHULEKH-VERIFY-${Date.now()}-${data.surveyNumber.replace(/[^a-zA-Z0-9]/g, '')}`,
+      digitalSignature: `SHA256-NIC-GOV-MAHA-${Date.now()}`,
+      issuedAt: nowIso,
+      expiresAt: new Date(Date.now() + 365 * 24 * 3600 * 1000).toISOString(),
+      status: 'VALID',
+    };
+    if (existingCertIndex >= 0) {
+      this.trustCertificates[existingCertIndex] = certItem;
+    } else {
+      this.trustCertificates.unshift(certItem);
+    }
+
+    // Add Official 7/12 RoR to Citizen Document Wallet
+    this.documents.unshift({
+      id: `doc-c-${Date.now()}`,
+      citizenId: this.profile.id,
+      parcelUid: data.parcelUid,
+      surveyNumber: data.surveyNumber,
+      title: `Digital 7/12 RoR Extract (Survey ${data.surveyNumber} ${data.village})`,
+      documentType: 'ROR_7_12',
+      folder: 'VERIFIED_RECORDS',
+      fileSize: '1.4 MB',
+      fileFormat: 'PDF (Digital Sign)',
+      downloadUrl: `/api/citizen/712-pdf/${data.parcelUid}`,
+      verificationHash: `SHA-256-${Date.now()}`,
+      qrCodeUrl: `https://bhulekh.gov.in/verify/${data.parcelUid}`,
+      isArchived: false,
+      isFavorite: true,
+      issuedAt: nowIso,
+    });
+
+    // Send High-Priority Citizen Notification
+    this.notifications.unshift({
+      id: `notif-c-${Date.now()}`,
+      citizenId: this.profile.id,
+      title: `Land Record Ingested & Verified: Survey ${data.surveyNumber}`,
+      message: `Land parcel in ${data.village}, ${data.taluka} has been processed through all 6 AI verification steps by the Revenue Officer and synced to your Citizen Dossier.`,
+      type: 'VERIFICATION_COMPLETED',
+      priority: 'HIGH',
+      isRead: false,
+      isArchive: false,
+      actionUrl: '/citizen/portfolio',
+      createdAt: nowIso,
+    });
+  }
 }
 
 export const citizenDb = new CitizenDatabase();

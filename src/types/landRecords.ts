@@ -1,4 +1,4 @@
-// TypeScript definitions for Bhulekh AI v3 - Module 2 (Land Records Intelligence)
+// TypeScript definitions for BhoomiSetu - Module 2 (Land Records Intelligence)
 
 export type LandRecordType =
   | '7/12_ROR'

@@ -255,8 +255,8 @@ export const LandTimelineView: React.FC<LandTimelineViewProps> = ({
       areaHa: currentParcel.landAreaHa,
       landClassification: currentParcel.landType,
       taxAssessmentInr: 850,
-      documentRef: 'BHULEKH-AI-V3-IMMUTABLE-DNA',
-      documentType: 'Bhulekh AI v3 Real-Time Multi-Agent Cadastral Dossier',
+      documentRef: 'BHOOMISETU-IMMUTABLE-DNA',
+      documentType: 'BhoomiSetu Real-Time Multi-Agent Cadastral Dossier',
       governingLaw: 'National Land Governance AI Framework (DILRMP 2.0)',
       status: 'CLEAR',
       boundaryCoordinates: [

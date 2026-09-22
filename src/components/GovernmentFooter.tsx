@@ -17,7 +17,7 @@ export const GovernmentFooter: React.FC = () => {
                   Government of India
                 </div>
                 <div className="text-base font-bold text-white">
-                  Bhulekh AI v3
+                  BhoomiSetu
                 </div>
               </div>
             </div>
@@ -123,7 +123,7 @@ export const GovernmentFooter: React.FC = () => {
               <div>
                 <strong>Official NIC Helpdesk:</strong>
                 <div className="font-mono text-blue-200">
-                  bhulekh-support@nic.in
+                  support@bhoomisetu.gov.in
                 </div>
               </div>
               <div className="text-[11px] text-blue-200 pt-1">

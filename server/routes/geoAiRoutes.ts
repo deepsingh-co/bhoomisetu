@@ -283,7 +283,7 @@ geoAiRouter.get('/parcel/:id', (req, res) => {
       verificationOfficers: [
         { role: 'Talathi', name: 'R. K. Thorat', date: '2026-01-14', status: 'Approved' },
         { role: 'Circle Officer', name: 'V. S. Kulkarni', date: '2026-02-02', status: 'Flagged Mismatch' },
-        { role: 'Tehsildar AI Review', name: 'Bhulekh AI Agent v3', date: '2026-02-24', status: 'Encroachment Hold' },
+        { role: 'Tehsildar AI Review', name: 'BhoomiSetu AI Agent', date: '2026-02-24', status: 'Encroachment Hold' },
       ]
     }
   });

@@ -131,7 +131,7 @@ export const CitizenNavbar: React.FC<CitizenNavbarProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-lg md:text-xl font-bold text-[#123A78] tracking-tight leading-tight">
-                Bhulekh AI v3
+                BhoomiSetu
               </h1>
               <span className="bg-[#0B7A3B]/10 text-[#0B7A3B] text-[10px] font-bold px-2 py-0.5 rounded border border-[#0B7A3B]/30 uppercase">
                 Citizen Portal

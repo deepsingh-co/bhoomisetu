@@ -435,7 +435,7 @@ export const CitizenTrustScoreView: React.FC<CitizenTrustScoreViewProps> = ({
                     Official Cadastral Citizen Trust Certificate
                   </h2>
                   <div className="text-xs text-gray-600 font-mono">
-                    Certificate UID: CERT-BHULEKH-{currentParcel.parcelUid.slice(-8)}-2026 &bull; DILRMP Standard
+                    Certificate UID: CERT-BHOOMISETU-{currentParcel.parcelUid.slice(-8)}-2026 &bull; DILRMP Standard
                   </div>
                 </div>
 

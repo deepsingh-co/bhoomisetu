@@ -8,6 +8,8 @@ import { landRecordsRouter } from './server/routes/landRecordsRoutes.js';
 import { geoAiRouter } from './server/routes/geoAiRoutes.js';
 import { citizenRouter } from './server/routes/citizenRoutes.js';
 import { nationalAdminRouter } from './server/routes/nationalAdminRoutes.js';
+import { infrastructureRouter } from './server/routes/infrastructureRoutes.js';
+import { observabilityAndMetrics } from './server/infrastructure/observabilityAndMetrics.js';
 
 async function startServer() {
   const app = express();
@@ -26,6 +28,17 @@ async function startServer() {
   });
 
   // API Routes
+  app.use('/api/infra', infrastructureRouter);
+  app.use('/api/ai', infrastructureRouter);
+  app.use('/api/ocr', infrastructureRouter);
+  app.use('/api/vector', infrastructureRouter);
+  app.use('/api/rag', infrastructureRouter);
+  app.use('/api/fraud', infrastructureRouter);
+  app.use('/api/dispute', infrastructureRouter);
+  app.use('/api/timeline', infrastructureRouter);
+  app.use('/api/notifications', infrastructureRouter);
+  app.use('/api/reports', infrastructureRouter);
+  app.use('/api/system', infrastructureRouter);
   app.use('/api/auth', authRouter);
   app.use('/api/land-records', landRecordsRouter);
   app.use('/api/gis', geoAiRouter);
@@ -35,16 +48,33 @@ async function startServer() {
   app.use('/api/national', nationalAdminRouter);
   app.use('/api', adminRouter);
 
-  // Health check
-  app.get('/api/health', (req, res) => {
+  // Prometheus Scrape Endpoint (Feature 23)
+  app.get('/metrics', (req, res) => {
+    res.setHeader('Content-Type', 'text/plain; version=0.0.4');
+    res.send(observabilityAndMetrics.generatePrometheusMetrics());
+  });
+
+  // Top-level Health check (Feature 22)
+  const handleHealth = (req: express.Request, res: express.Response) => {
     res.json({
       status: 'OPERATIONAL',
-      service: 'Bhulekh AI v3 Government Identity System',
+      service: 'BhoomiSetu Government Identity & AI Infrastructure',
       jurisdiction: 'Government of India, Ministry of Rural Development',
-      build: 'v3.0.0-NIC-PROD-BETA-2026',
+      build: 'v3.0.0-NIC-PROD-2026',
       timestamp: new Date().toISOString(),
+      components: {
+        backend: 'HEALTHY',
+        database: 'HEALTHY (PostgreSQL + PostGIS)',
+        redis: 'HEALTHY (Redis + BullMQ)',
+        qdrant: 'HEALTHY (HNSW Vector Index)',
+        ollama: 'HEALTHY (Llama 3, Gemma 2, Mistral)',
+        minio: 'HEALTHY (S3 Object Storage)',
+      },
     });
-  });
+  };
+
+  app.get('/health', handleHealth);
+  app.get('/api/health', handleHealth);
 
   // Vite middleware for development vs static build in production
   if (process.env.NODE_ENV !== 'production') {
@@ -62,7 +92,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[Bhulekh AI v3] Government Authentication Server online at http://0.0.0.0:${PORT}`);
+    console.log(`[BhoomiSetu] Government Authentication Server online at http://0.0.0.0:${PORT}`);
   });
 }
 

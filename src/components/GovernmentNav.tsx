@@ -1,5 +1,21 @@
-import React from 'react';
-import { LogOut, User as UserIcon, Shield, FileText, CheckCircle2, Bell, Compass } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  LogOut,
+  User as UserIcon,
+  Shield,
+  FileText,
+  CheckCircle2,
+  Bell,
+  Compass,
+  Home,
+  Users,
+  Building2,
+  Satellite,
+  Landmark,
+  Cpu,
+  KeyRound,
+  ChevronDown,
+} from 'lucide-react';
 import { Language, translations } from '../translations';
 import { User } from '../types';
 
@@ -25,63 +41,37 @@ export const GovernmentNav: React.FC<GovernmentNavProps> = ({
   onOpenNotifications,
 }) => {
   const t = translations[language];
+  const [isPortalMenuOpen, setIsPortalMenuOpen] = useState(false);
 
-  const publicNavItems: { id: ActiveNavView; label: string; badge?: string }[] = [
-    { id: 'home', label: t.home },
-    { id: 'national-command', label: 'National Command Center (GoI)', badge: 'Module 5' },
-    { id: 'citizen-portal', label: 'Citizen Portal (नागरिक पोर्टल)' },
-    { id: 'geo-ai', label: 'ISRO GeoAI Layer' },
-    { id: 'citizen-services', label: t.citizenServices },
-    { id: 'officer-login', label: t.officerLogin },
-    { id: 'verification', label: t.verification },
-    { id: 'help-centre', label: t.helpCentre },
-    { id: 'contact', label: t.contact },
-    { id: 'rti', label: t.rti },
-    { id: 'about-platform', label: t.aboutPlatform },
+  // Streamlined Public Navigation
+  const publicNavItems: { id: ActiveNavView; label: string; icon: React.ReactNode; badge?: string }[] = [
+    { id: 'home', label: 'Portal Gateway', icon: <Home className="w-4 h-4 text-[#123A78]" /> },
+    { id: 'citizen-portal', label: 'Citizen Services (नागरिक)', icon: <Users className="w-4 h-4 text-emerald-600" /> },
+    { id: 'dashboard', label: 'Officer Desk (अधिकारी)', icon: <Building2 className="w-4 h-4 text-slate-700" /> },
+    { id: 'geo-ai', label: 'ISRO GeoAI Studio', icon: <Compass className="w-4 h-4 text-sky-600" /> },
+    { id: 'national-command', label: 'National Command Center', icon: <Landmark className="w-4 h-4 text-amber-600" /> },
+    { id: 'infrastructure', label: 'AI Infra & DevOps', icon: <Cpu className="w-4 h-4 text-purple-600" /> },
   ];
 
-  // Additional Nav items when authenticated
-  const authenticatedItems: { id: ActiveNavView; label: string; icon?: React.ReactNode; badge?: string }[] = [
-    { id: 'national-command', label: 'National Command Center', icon: <Shield className="w-4 h-4 text-amber-500" />, badge: 'Admin' },
-    { id: 'citizen-portal', label: 'Citizen Portal View', icon: <CheckCircle2 className="w-4 h-4 text-emerald-600" /> },
-    { id: 'dashboard', label: 'Officer Dashboard', icon: <FileText className="w-4 h-4" /> },
-    { id: 'geo-ai', label: 'ISRO GeoAI Layer', icon: <Compass className="w-4 h-4 text-amber-500" /> },
-    { id: 'voice-search', label: 'Voice Search', icon: <FileText className="w-4 h-4 text-emerald-700" /> },
-    { id: 'multi-agent', label: 'Multi-Agent Hub', icon: <FileText className="w-4 h-4 text-[#123A78]" /> },
-    { id: 'timeline', label: 'AI Land Timeline', icon: <FileText className="w-4 h-4 text-amber-700" /> },
-    { id: 'trust-score', label: 'Citizen Trust Score', icon: <CheckCircle2 className="w-4 h-4 text-[#0B7A3B]" /> },
-    { id: 'upload', label: 'Upload & Scanner', icon: <FileText className="w-4 h-4" /> },
-    { id: 'queue', label: 'AI Verification Queue', icon: <CheckCircle2 className="w-4 h-4" /> },
-    { id: 'gis', label: 'GIS & Satellite', icon: <Shield className="w-4 h-4" /> },
-    { id: 'parcel-dna', label: 'Parcel 360° & DNA', icon: <FileText className="w-4 h-4" /> },
-    { id: 'fraud', label: 'Fraud & Disputes', icon: <Shield className="w-4 h-4 text-[#B42318]" /> },
-    { id: 'mutation-sim', label: 'Mutation Simulator', icon: <FileText className="w-4 h-4" /> },
-    { id: 'reports', label: 'DILRMP Reports', icon: <FileText className="w-4 h-4" /> },
-    { id: 'security-center', label: 'Security Center', icon: <Shield className="w-4 h-4" /> },
-    { id: 'audit-logs', label: 'Audit Activity', icon: <FileText className="w-4 h-4" /> },
+  // Portals Available to Authenticated User
+  const allPortals = [
+    { id: 'citizen-portal', label: 'Citizen Portal (नागरिक)', icon: <Users className="w-4 h-4 text-emerald-600" /> },
+    { id: 'dashboard', label: 'Officer Verification Desk', icon: <Building2 className="w-4 h-4 text-slate-700" /> },
+    { id: 'geo-ai', label: 'ISRO GeoAI Spatial Studio', icon: <Compass className="w-4 h-4 text-sky-600" /> },
+    { id: 'national-command', label: 'National Command Center', icon: <Landmark className="w-4 h-4 text-amber-600" /> },
+    { id: 'infrastructure', label: 'AI Infrastructure & DevOps', icon: <Cpu className="w-4 h-4 text-purple-600" /> },
   ];
-
-  // If Admin or Collector, add Employee Approvals
-  if (
-    currentUser &&
-    ['SUPER_ADMIN', 'STATE_ADMIN', 'DISTRICT_COLLECTOR'].includes(currentUser.roleType)
-  ) {
-    authenticatedItems.splice(1, 0, {
-      id: 'approvals',
-      label: 'Employee Approvals',
-      icon: <CheckCircle2 className="w-4 h-4 text-[#1F7A3E]" />,
-    });
-  }
 
   return (
     <nav
       id="government-navigation-bar"
-      className="sticky top-0 z-40 w-full bg-white border-b border-[#D8DEE8] shadow-sm transition-all"
+      className="sticky top-0 z-40 w-full bg-white border-b border-[#D8DEE8] shadow-xs transition-all"
       aria-label="Main Government Portal Navigation"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 flex items-center justify-between overflow-x-auto scrollbar-thin">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 flex items-center justify-between">
+        
         {/* Navigation Link List */}
-        <div className="flex items-center space-x-1 sm:space-x-2 py-0">
+        <div className="flex items-center space-x-1 sm:space-x-2 py-0 overflow-x-auto scrollbar-thin">
           {!currentUser ? (
             publicNavItems.map((item) => {
               const isActive = activeView === item.id;
@@ -90,21 +80,15 @@ export const GovernmentNav: React.FC<GovernmentNavProps> = ({
                   key={item.id}
                   id={`nav-item-${item.id}`}
                   onClick={() => onNavigate(item.id)}
-                  className={`relative py-3.5 px-3 text-sm font-medium whitespace-nowrap transition-colors focus:outline-none focus:ring-2 focus:ring-[#123A78] rounded-t-sm ${
+                  className={`relative py-3.5 px-3 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors focus:outline-none focus:ring-2 focus:ring-[#123A78] rounded-t-sm flex items-center gap-1.5 ${
                     isActive
                       ? 'text-[#123A78] font-bold border-b-2 border-[#123A78] bg-blue-50/50'
                       : 'text-[#1C2733] hover:text-[#123A78] hover:bg-gray-50'
                   }`}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <span className="flex items-center gap-1.5">
-                    {item.label}
-                    {item.badge && (
-                      <span className="px-1.5 py-0.2 bg-amber-100 border border-amber-300 text-amber-900 rounded text-[10px] font-bold">
-                        {item.badge}
-                      </span>
-                    )}
-                  </span>
+                  {item.icon}
+                  <span>{item.label}</span>
                 </button>
               );
             })
@@ -113,40 +97,128 @@ export const GovernmentNav: React.FC<GovernmentNavProps> = ({
               <button
                 id="nav-item-home-auth"
                 onClick={() => onNavigate('home')}
-                className={`py-3.5 px-3 text-sm font-medium whitespace-nowrap transition-colors focus:outline-none focus:ring-2 focus:ring-[#123A78] ${
+                className={`py-3.5 px-3 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[#123A78] ${
                   activeView === 'home'
-                    ? 'text-[#123A78] font-bold border-b-2 border-[#123A78]'
+                    ? 'text-[#123A78] font-bold border-b-2 border-[#123A78] bg-blue-50/50'
                     : 'text-[#5A6878] hover:text-[#123A78]'
                 }`}
               >
-                {t.home}
+                <Home className="w-4 h-4" />
+                <span>Gateway</span>
               </button>
 
-              {authenticatedItems.map((item) => {
-                const isActive = activeView === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    id={`nav-item-${item.id}`}
-                    onClick={() => onNavigate(item.id)}
-                    className={`flex items-center gap-1.5 py-3.5 px-3 text-sm font-medium whitespace-nowrap transition-colors focus:outline-none focus:ring-2 focus:ring-[#123A78] ${
-                      isActive
-                        ? 'text-[#123A78] font-bold border-b-2 border-[#123A78] bg-blue-50/50'
-                        : 'text-[#1C2733] hover:text-[#123A78] hover:bg-gray-50'
-                    }`}
-                    aria-current={isActive ? 'page' : undefined}
+              {/* Portal Switcher Dropdown for Logged In User */}
+              <div className="relative">
+                <button
+                  id="portal-switcher-btn"
+                  onClick={() => setIsPortalMenuOpen(!isPortalMenuOpen)}
+                  className="py-2.5 px-3 my-1 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-md font-bold text-xs flex items-center gap-1.5 transition-colors border border-gray-300"
+                >
+                  <span>Switch Workspace</span>
+                  <ChevronDown className="w-3.5 h-3.5 text-gray-600" />
+                </button>
+
+                {isPortalMenuOpen && (
+                  <div
+                    className="absolute left-0 top-full mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50 py-1.5"
+                    onClick={() => setIsPortalMenuOpen(false)}
                   >
-                    {item.icon}
-                    <span>{item.label}</span>
-                  </button>
-                );
-              })}
+                    <div className="px-3 py-1 text-[10px] uppercase font-bold text-gray-400">
+                      All Government Workspaces
+                    </div>
+                    {allPortals.map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => onNavigate(p.id)}
+                        className={`w-full px-3 py-2 text-left text-xs flex items-center gap-2 hover:bg-gray-50 ${
+                          activeView === p.id ? 'bg-blue-50 font-bold text-[#123A78]' : 'text-gray-700'
+                        }`}
+                      >
+                        {p.icon}
+                        <span>{p.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Direct Workspace link corresponding to role */}
+              {currentUser.roleType === 'CITIZEN' && (
+                <button
+                  id="nav-item-citizen-active"
+                  onClick={() => onNavigate('citizen-portal')}
+                  className={`py-3.5 px-3 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                    activeView === 'citizen-portal'
+                      ? 'text-emerald-700 font-bold border-b-2 border-emerald-600 bg-emerald-50/50'
+                      : 'text-gray-700 hover:text-emerald-700'
+                  }`}
+                >
+                  <Users className="w-4 h-4 text-emerald-600" />
+                  <span>My Land Portfolio</span>
+                </button>
+              )}
+
+              {['GOVERNMENT_OFFICER', 'VERIFICATION_OFFICER'].includes(currentUser.roleType) && (
+                <button
+                  id="nav-item-officer-active"
+                  onClick={() => onNavigate('dashboard')}
+                  className={`py-3.5 px-3 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                    activeView === 'dashboard'
+                      ? 'text-[#123A78] font-bold border-b-2 border-[#123A78] bg-blue-50/50'
+                      : 'text-gray-700 hover:text-[#123A78]'
+                  }`}
+                >
+                  <Building2 className="w-4 h-4 text-[#123A78]" />
+                  <span>Officer Verification Desk</span>
+                </button>
+              )}
+
+              {currentUser.roleType === 'SURVEY_OFFICER' && (
+                <button
+                  id="nav-item-geoai-active"
+                  onClick={() => onNavigate('geo-ai')}
+                  className={`py-3.5 px-3 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                    activeView === 'geo-ai'
+                      ? 'text-sky-700 font-bold border-b-2 border-sky-600 bg-sky-50/50'
+                      : 'text-gray-700 hover:text-sky-700'
+                  }`}
+                >
+                  <Compass className="w-4 h-4 text-sky-600" />
+                  <span>ISRO GeoAI Studio</span>
+                </button>
+              )}
+
+              {['DISTRICT_COLLECTOR', 'STATE_ADMIN', 'SUPER_ADMIN'].includes(currentUser.roleType) && (
+                <button
+                  id="nav-item-admin-active"
+                  onClick={() => onNavigate('national-command')}
+                  className={`py-3.5 px-3 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                    activeView === 'national-command'
+                      ? 'text-amber-800 font-bold border-b-2 border-amber-600 bg-amber-50/50'
+                      : 'text-gray-700 hover:text-amber-800'
+                  }`}
+                >
+                  <Landmark className="w-4 h-4 text-amber-700" />
+                  <span>National Command</span>
+                </button>
+              )}
             </>
           )}
         </div>
 
-        {/* Authenticated User Status Strip & Logout */}
-        {currentUser && (
+        {/* Right Action: Sign In Button when Guest, or Profile & Logout when Logged In */}
+        {!currentUser ? (
+          <div className="flex items-center gap-2 py-2 pl-3 shrink-0">
+            <button
+              id="nav-signin-direct-btn"
+              onClick={() => onNavigate('login')}
+              className="px-4 py-2 bg-[#123A78] hover:bg-[#0E2C5B] text-white font-bold text-xs rounded-lg flex items-center gap-1.5 shadow-2xs transition-colors"
+            >
+              <KeyRound className="w-3.5 h-3.5 text-amber-300" />
+              <span>Sign In</span>
+            </button>
+          </div>
+        ) : (
           <div className="flex items-center gap-3 py-2 pl-4 shrink-0 border-l border-[#D8DEE8]">
             <button
               id="user-profile-nav-btn"

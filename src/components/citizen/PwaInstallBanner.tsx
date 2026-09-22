@@ -49,7 +49,7 @@ export const PwaInstallBanner: React.FC = () => {
           <Smartphone className="w-4 h-4 text-[#F39C12]" />
         </div>
         <div>
-          <span className="font-semibold block sm:inline">Install Bhulekh AI Mobile App (PWA):</span>{' '}
+          <span className="font-semibold block sm:inline">Install BhoomiSetu Mobile App (PWA):</span>{' '}
           <span className="text-gray-200">
             Official offline access for farmers & citizens. Fast 7/12 download with zero data charges.
           </span>

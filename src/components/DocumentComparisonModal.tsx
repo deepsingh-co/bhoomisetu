@@ -87,7 +87,7 @@ export const DocumentComparisonModal: React.FC<DocumentComparisonModalProps> = (
             <ArrowLeftRight className="w-6 h-6 text-amber-300 shrink-0" />
             <div>
               <div className="text-[11px] font-semibold text-blue-200 uppercase tracking-wider">
-                Bhulekh AI v3 &bull; Feature 15
+                BhoomiSetu &bull; Feature 15
               </div>
               <h2 className="text-base font-bold">AI Document Comparison &amp; Historical Cadastral Diff</h2>
             </div>

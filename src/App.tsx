@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GovernmentHeader } from './components/GovernmentHeader';
 import { GovernmentNav } from './components/GovernmentNav';
+import { LandingPortalGateway } from './components/LandingPortalGateway';
 import { HeroAndTrust } from './components/HeroAndTrust';
 import { LoginView } from './components/LoginView';
 import { DashboardView } from './components/DashboardView';
@@ -29,6 +30,9 @@ import { CitizenPortalMasterView } from './components/citizen/CitizenPortalMaste
 
 // Module 5: National Command Center + Admin + State & District Governance
 import { AdminMasterView } from './components/admin/AdminMasterView';
+
+// Module 6: AI Infrastructure + Enterprise Backend + Security + DevOps
+import { InfrastructureMasterView } from './components/infrastructure/InfrastructureMasterView';
 
 // Module 2 Modals
 import { InspectionReportModal } from './components/InspectionReportModal';
@@ -61,6 +65,8 @@ export default function App() {
   // Authentication State
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [pendingTargetPortal, setPendingTargetPortal] = useState<string | null>(null);
+  const [securityNotice, setSecurityNotice] = useState<string | null>(null);
 
   // Modals Visibility
   const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
@@ -143,16 +149,21 @@ export default function App() {
   };
 
   // Load parcels from API or use initial seed
-  useEffect(() => {
+  const reloadParcels = useCallback(() => {
     fetch('/api/land-records')
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setParcels(data);
+        const list = Array.isArray(data) ? data : data.parcels;
+        if (Array.isArray(list) && list.length > 0) {
+          setParcels(list);
         }
       })
       .catch((err) => console.warn('Using seeded parcels.'));
   }, []);
+
+  useEffect(() => {
+    reloadParcels();
+  }, [reloadParcels]);
 
   // Selected Parcel object
   const currentSelectedParcel =
@@ -213,18 +224,49 @@ export default function App() {
   };
 
   // Auth Handlers
-  const handleLoginSuccess = (authenticatedUser: User, authToken: string) => {
+  const handleLoginSuccess = (authenticatedUser: User, authToken: string, targetPortal?: string) => {
     setUser(authenticatedUser);
     setToken(authToken);
     localStorage.setItem('bhulekh_auth_token', authToken);
     localStorage.setItem('bhulekh_user_data', JSON.stringify(authenticatedUser));
-    if (authenticatedUser.roleType === 'CITIZEN') {
+    
+    const destination = targetPortal || pendingTargetPortal;
+    setPendingTargetPortal(null);
+    setSecurityNotice(null);
+
+    if (destination && destination !== 'home' && destination !== 'login') {
+      setCurrentView(destination);
+    } else if (authenticatedUser.roleType === 'CITIZEN') {
       setCurrentView('citizen-portal');
+    } else if (['DISTRICT_COLLECTOR', 'SUPER_ADMIN', 'STATE_ADMIN'].includes(authenticatedUser.roleType)) {
+      setCurrentView('national-command');
+    } else if (authenticatedUser.roleType === 'SURVEY_OFFICER') {
+      setCurrentView('geo-ai');
     } else {
       setCurrentView('dashboard');
     }
     setIs2FAModalOpen(false);
     setIsCitizenOtpModalOpen(false);
+  };
+
+  const handleNavigate = (view: string) => {
+    if (view === 'home') {
+      setCurrentView('home');
+      setSecurityNotice(null);
+      return;
+    }
+    if (view === 'login') {
+      setCurrentView('login');
+      return;
+    }
+    if (!user) {
+      setPendingTargetPortal(view);
+      const readableName = view.replace(/-/g, ' ').toUpperCase();
+      setSecurityNotice(`Direct access to ${readableName} is restricted. Authentication and 6-digit OTP verification are required before you may enter this portal.`);
+      setCurrentView('login');
+      return;
+    }
+    setCurrentView(view);
   };
 
   const handleRequire2FA = (
@@ -259,6 +301,8 @@ export default function App() {
     }
     setUser(null);
     setToken(null);
+    setPendingTargetPortal(null);
+    setSecurityNotice(null);
     localStorage.removeItem('bhulekh_auth_token');
     localStorage.removeItem('bhulekh_user_data');
     setCurrentView('home');
@@ -315,7 +359,7 @@ export default function App() {
       <GovernmentNav
         language={language}
         activeView={currentView}
-        onNavigate={setCurrentView}
+        onNavigate={handleNavigate}
         currentUser={user}
         onLogout={handleLogout}
         unreadNotificationsCount={unreadNotificationsCount}
@@ -324,39 +368,29 @@ export default function App() {
 
       {/* 3. Main View Render */}
       <main className="flex-1 w-full flex flex-col">
-        {/* Landing Page */}
+        {/* Landing Portal Gateway */}
         {currentView === 'home' && (
-          <div className="w-full">
-            <HeroAndTrust
-              language={language}
-              onSelectNationalCommand={() => setCurrentView('national-command')}
-              onSelectOfficerLogin={() => setCurrentView('login')}
-              onSelectCitizenLogin={() => setCurrentView('citizen-portal')}
-              onSelectGeoAi={() => setCurrentView('geo-ai')}
-              onSelectLearnMore={() => {
-                const el = document.getElementById('login-section');
-                el?.scrollIntoView({ behavior: 'smooth' });
-              }}
-            />
-            {/* Embedded Login Section on Landing Page for Instant Government Access */}
-            <div id="login-section" className="w-full">
-              <LoginView
-                language={language}
-                onLoginSuccess={handleLoginSuccess}
-                onRequire2FA={handleRequire2FA}
-                onRequireCitizenOtp={handleRequireCitizenOtp}
-                onOpenRegisterModal={() => setIsRegisterModalOpen(true)}
-                onOpenForgotPasswordModal={() => setIsForgotPasswordModalOpen(true)}
-              />
-            </div>
-          </div>
+          <LandingPortalGateway
+            language={language}
+            currentUser={user}
+            onNavigateToPortal={handleNavigate}
+            onLoginSuccess={handleLoginSuccess}
+            onRequire2FA={handleRequire2FA}
+            onRequireCitizenOtp={handleRequireCitizenOtp}
+            onOpenRegisterModal={() => setIsRegisterModalOpen(true)}
+            onOpenForgotPasswordModal={() => setIsForgotPasswordModalOpen(true)}
+            onSelectParcelForView={(parcelId) => {
+              setSelectedParcelId(parcelId);
+            }}
+          />
         )}
 
-        {/* Dedicated Login View */}
-        {currentView === 'login' && (
+        {/* Security Gate: If not authenticated and trying to view any portal, enforce Login + OTP */}
+        {!user && currentView !== 'home' && (
           <div className="w-full py-4">
             <LoginView
               language={language}
+              securityNotice={securityNotice || "Security Protocol: Portal access is restricted. Authentication and 6-digit OTP verification are required to enter."}
               onLoginSuccess={handleLoginSuccess}
               onRequire2FA={handleRequire2FA}
               onRequireCitizenOtp={handleRequireCitizenOtp}
@@ -367,7 +401,7 @@ export default function App() {
         )}
 
         {/* Module 4: Citizen Portal (UMANG / DigiLocker / Citizen Experience) */}
-        {(currentView === 'citizen-portal' ||
+        {user && (currentView === 'citizen-portal' ||
           currentView === 'citizen-services' ||
           currentView === 'citizen') && (
           <CitizenPortalMasterView
@@ -377,8 +411,15 @@ export default function App() {
           />
         )}
 
+        {/* Module 6: AI Infrastructure + Enterprise Backend + Security + DevOps */}
+        {user && (currentView === 'infrastructure' ||
+          currentView === 'devops' ||
+          currentView === 'backend') && (
+          <InfrastructureMasterView onBackToDashboard={() => setCurrentView('home')} />
+        )}
+
         {/* Module 5: National Command Center + Admin + State & District Governance */}
-        {(currentView === 'national-command' ||
+        {user && (currentView === 'national-command' ||
           currentView === 'admin-command' ||
           currentView === 'command-center' ||
           currentView === 'national') && (
@@ -386,24 +427,9 @@ export default function App() {
         )}
 
         {/* Multi-Role Department Console & Intelligence Command Center */}
-        {currentView === 'dashboard' && (
+        {user && currentView === 'dashboard' && (
           <DashboardView
-            user={user || {
-              id: 'officer-demo',
-              fullName: 'Shri Mahesh Gopal Kulkarni',
-              employeeId: 'MH-REV-HAV-2024-081',
-              department: 'Department of Revenue & Land Records',
-              designation: 'Sub-Divisional Magistrate / Tehsildar',
-              roleType: 'GOVERNMENT_OFFICER',
-              state: 'Maharashtra',
-              district: 'Pune',
-              isApproved: true,
-              isEmailVerified: true,
-              isPhoneVerified: true,
-              is2FAEnabled: true,
-              createdAt: '2024-01-01',
-              email: 'sdm.haveli@mahabhulekh.gov.in',
-            }}
+            user={user}
             parcels={parcels}
             selectedParcelId={selectedParcelId}
             onSelectParcel={setSelectedParcelId}
@@ -427,7 +453,7 @@ export default function App() {
         )}
 
         {/* Module 3: ISRO × NIC GeoAI Spatial Intelligence Platform */}
-        {currentView === 'geo-ai' && (
+        {user && currentView === 'geo-ai' && (
           <GeoAiMasterView
             onOpenInspectParcelModal={(parcelId) => {
               setSelectedParcelId(parcelId);
@@ -437,15 +463,27 @@ export default function App() {
         )}
 
         {/* Feature 1 & 2: Upload Center & Mobile Desk Scanner */}
-        {(currentView === 'upload' || currentView === 'scanner') && (
+        {user && (currentView === 'upload' || currentView === 'scanner') && (
           <UploadCenterView
-            onDocumentUploaded={() => setCurrentView('queue')}
-            onNavigateToQueue={() => setCurrentView('queue')}
+            onDocumentUploaded={(newParcelId) => {
+              reloadParcels();
+              if (newParcelId) setSelectedParcelId(newParcelId);
+              setCurrentView('queue');
+            }}
+            onNavigateToQueue={() => {
+              reloadParcels();
+              setCurrentView('queue');
+            }}
+            onNavigateToCitizen={(parcelId) => {
+              reloadParcels();
+              if (parcelId) setSelectedParcelId(parcelId);
+              setCurrentView('citizen-portal');
+            }}
           />
         )}
 
         {/* Feature 3: Verification Queue with Dual-Pane OCR & Explainable AI */}
-        {currentView === 'queue' && (
+        {user && currentView === 'queue' && (
           <VerificationQueueView
             parcels={parcels}
             onSelectParcel={setSelectedParcelId}
@@ -454,7 +492,7 @@ export default function App() {
         )}
 
         {/* Feature 4: GIS & Satellite Truth Verification */}
-        {currentView === 'gis' && (
+        {user && currentView === 'gis' && (
           <GisSatelliteView
             parcels={parcels}
             selectedParcelId={selectedParcelId}
@@ -464,7 +502,7 @@ export default function App() {
         )}
 
         {/* Feature 5: Parcel 360° Profile & Land DNA */}
-        {currentView === 'parcel-dna' && (
+        {user && currentView === 'parcel-dna' && (
           <ParcelIntelligenceView
             parcels={parcels}
             selectedParcelId={selectedParcelId}
@@ -475,7 +513,7 @@ export default function App() {
         )}
 
         {/* Feature 6: Fraud Forensic & Dispute Prediction */}
-        {currentView === 'fraud' && (
+        {user && currentView === 'fraud' && (
           <FraudAndDisputeView
             parcels={parcels}
             selectedParcelId={selectedParcelId}
@@ -484,7 +522,7 @@ export default function App() {
         )}
 
         {/* Feature 7: Multi-Agent AI Officer Hub with Human-in-the-Loop Override */}
-        {currentView === 'multi-agent' && (
+        {user && currentView === 'multi-agent' && (
           <MultiAgentHubView
             parcels={parcels}
             selectedParcelId={selectedParcelId}
@@ -493,7 +531,7 @@ export default function App() {
         )}
 
         {/* Feature 8: Mutation "What-If" Impact Simulator */}
-        {currentView === 'mutation-sim' && (
+        {user && currentView === 'mutation-sim' && (
           <MutationSimulatorView
             parcels={parcels}
             selectedParcelId={selectedParcelId}
@@ -502,7 +540,7 @@ export default function App() {
         )}
 
         {/* Feature 12: Voice-Based Land Search */}
-        {currentView === 'voice-search' && (
+        {user && currentView === 'voice-search' && (
           <VoiceSearchView
             parcels={parcels}
             onSelectParcel={setSelectedParcelId}
@@ -511,7 +549,7 @@ export default function App() {
         )}
 
         {/* Feature 13: AI Land Timeline (Time Travel for Land from 1950 to Present) */}
-        {currentView === 'timeline' && (
+        {user && currentView === 'timeline' && (
           <LandTimelineView
             parcels={parcels}
             selectedParcelId={selectedParcelId}
@@ -521,7 +559,7 @@ export default function App() {
         )}
 
         {/* Feature 14: Citizen Trust Score & Digital Verification Certificate */}
-        {(currentView === 'trust-score' || currentView === 'verification') && (
+        {user && (currentView === 'trust-score' || currentView === 'verification') && (
           <CitizenTrustScoreView
             parcels={parcels}
             selectedParcelId={selectedParcelId}
@@ -532,7 +570,7 @@ export default function App() {
         )}
 
         {/* Feature 20: DILRMP District Reporting & Analytics */}
-        {currentView === 'reports' && <GovernmentReportsView />}
+        {user && currentView === 'reports' && <GovernmentReportsView />}
 
         {/* Collector / Admin Employee Approval Workflow */}
         {currentView === 'approvals' && user && (
@@ -552,7 +590,7 @@ export default function App() {
         )}
 
         {/* Audit Logs Immutable Trail */}
-        {currentView === 'audit' && (
+        {user && currentView === 'audit' && (
           <AuditLogsView onBackToDashboard={() => setCurrentView('dashboard')} />
         )}
 

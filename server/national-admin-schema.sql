@@ -1,5 +1,5 @@
 -- ============================================================================
--- Bhulekh AI v3 — Module 5: National Command Center & Government Administration
+-- BhoomiSetu — Module 5: National Command Center & Government Administration
 -- PostgreSQL + PostGIS Relational Schema
 -- Ministry of Rural Development & National Informatics Centre (NIC)
 -- ============================================================================

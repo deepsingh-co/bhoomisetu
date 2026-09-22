@@ -38,7 +38,7 @@ export const GovernmentHeader: React.FC<GovernmentHeaderProps> = ({
   );
 
   const announceScreenReader = () => {
-    const announcement = `Bhulekh AI Version 3.0. Government of India, Ministry of Rural Development. Screen reader active. High contrast is ${
+    const announcement = `BhoomiSetu. Government of India, Ministry of Rural Development. Screen reader active. High contrast is ${
       isHighContrast ? 'enabled' : 'disabled'
     }.`;
     const utterance = new SpeechSynthesisUtterance(announcement);

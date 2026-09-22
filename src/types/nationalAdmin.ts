@@ -1,5 +1,5 @@
 // ============================================================================
-// Bhulekh AI v3 — Module 5: National Command Center TypeScript Definitions
+// BhoomiSetu — Module 5: National Command Center TypeScript Definitions
 // National Informatics Centre (NIC) & Department of Land Resources (DoLR)
 // ============================================================================
 

@@ -45,8 +45,8 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
     {
       id: 'verified',
       label: 'Verified Land Records',
-      value: '2 Parcels',
-      sublabel: '2.76 Hectares Total Holding',
+      value: `${dashboardData?.summary?.ownedCount ?? dashboardData?.parcels?.filter((p: any) => p.status === 'VERIFIED').length ?? 2} Parcels`,
+      sublabel: `${dashboardData?.summary?.totalAreaHectares ?? '2.76'} Hectares Total Holding`,
       icon: CheckCircle2,
       color: 'text-[#0B7A3B]',
       bgColor: 'bg-emerald-50 border-emerald-200',
@@ -55,7 +55,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
     {
       id: 'pending',
       label: 'Pending Mutations',
-      value: '1 Ferfar',
+      value: `${dashboardData?.summary?.pendingMutationCount ?? 1} Ferfar`,
       sublabel: 'Survey 88/4 Baramati (Heirship)',
       icon: Clock,
       color: 'text-[#F39C12]',
@@ -65,7 +65,7 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
     {
       id: 'certificates',
       label: 'Digital Certificates',
-      value: '5 Documents',
+      value: `${(dashboardData?.parcels?.length || 2) + 3} Documents`,
       sublabel: '7/12 RoR & Trust Certificates',
       icon: FileText,
       color: 'text-[#123A78]',
@@ -280,93 +280,132 @@ export const CitizenDashboardView: React.FC<CitizenDashboardViewProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Parcel Card 1 */}
-          <div className="border border-emerald-200 bg-emerald-50/40 rounded-xl p-4 flex flex-col justify-between">
-            <div>
-              <div className="flex items-start justify-between">
+          {(dashboardData?.parcels && dashboardData.parcels.length > 0 ? dashboardData.parcels : [
+            {
+              id: 'parcel-1',
+              parcelUid: 'IN-MH-PUN-HAV-2024-00142-A',
+              surveyNumber: '142/1',
+              village: 'Wagholi',
+              taluka: 'Haveli',
+              district: 'Pune',
+              areaHectares: 1.84,
+              trustScore: 98,
+              status: 'VERIFIED',
+              holdingType: 'Owned Agricultural Land',
+              unencumbered: true,
+            },
+            {
+              id: 'parcel-2',
+              parcelUid: 'IN-MH-PUN-BAR-2023-00088-B',
+              surveyNumber: '88/4',
+              village: 'Malegaon Budruk',
+              taluka: 'Baramati',
+              district: 'Pune',
+              areaHectares: 2.1,
+              trustScore: 68,
+              status: 'PENDING_MUTATION',
+              holdingType: 'Inherited Holding (Mutation Pending)',
+              unencumbered: false,
+            },
+          ]).map((parcel: any) => {
+            const isPending = parcel.status === 'PENDING_MUTATION' || parcel.status === 'UNDER_REVIEW';
+            const trustScore = parcel.trustScore || (parcel.status === 'VERIFIED' ? 98 : 74);
+            const holdingType = parcel.holdingType || (isPending ? 'Inherited Holding (Mutation In Review)' : 'Owned Agricultural Land');
+
+            return (
+              <div
+                key={parcel.id || parcel.parcelUid}
+                className={`border rounded-xl p-4 flex flex-col justify-between transition-all ${
+                  isPending ? 'border-amber-200 bg-amber-50/40' : 'border-emerald-200 bg-emerald-50/40'
+                }`}
+              >
                 <div>
-                  <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
-                    Owned Agricultural Land
-                  </span>
-                  <h4 className="text-base font-bold text-gray-900 mt-0.5">
-                    Survey No. 142/1, Wagholi
-                  </h4>
-                  <p className="text-xs text-gray-600">
-                    Taluka: Haveli | District: Pune | Area: 1.84 Hectares (73.6 Gunthas)
-                  </p>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span
+                        className={`text-xs font-bold uppercase tracking-wider ${
+                          isPending ? 'text-amber-800' : 'text-emerald-800'
+                        }`}
+                      >
+                        {holdingType}
+                      </span>
+                      <h4 className="text-base font-bold text-gray-900 mt-0.5">
+                        Survey No. {parcel.surveyNumber}, {parcel.village}
+                      </h4>
+                      <p className="text-xs text-gray-600">
+                        Taluka: {parcel.taluka} | District: {parcel.district || 'Pune'} | Area: {parcel.areaHectares || parcel.landAreaHa} Hectares ({Math.round((parcel.areaHectares || parcel.landAreaHa || 1) * 40)} Gunthas)
+                      </p>
+                      {parcel.ownerName && (
+                        <p className="text-[11px] text-gray-500 mt-0.5 font-medium">
+                          Holder: {parcel.ownerName}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span
+                        className={`inline-flex items-center gap-1 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-xs ${
+                          isPending ? 'bg-[#F39C12]' : 'bg-[#0B7A3B]'
+                        }`}
+                      >
+                        {isPending ? <Clock className="w-3.5 h-3.5" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                        <span>Trust Score {trustScore}/100</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`mt-3 bg-white p-2.5 rounded-lg border flex items-center justify-between text-xs ${
+                      isPending ? 'border-amber-100' : 'border-emerald-100'
+                    }`}
+                  >
+                    <span className="text-gray-600">
+                      {isPending
+                        ? 'Notice Period Lapsed. Tehsildar Sanction Pending.'
+                        : 'AI Verification: 100% OCR Match & Zero Encroachment'}
+                    </span>
+                    <span
+                      className={`font-bold ${
+                        isPending ? 'text-amber-800' : 'text-emerald-700'
+                      }`}
+                    >
+                      {isPending ? 'In Review' : 'Unencumbered'}
+                    </span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className="inline-flex items-center gap-1 bg-[#0B7A3B] text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-xs">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Trust Score 98/100
-                  </span>
+
+                <div
+                  className={`mt-4 pt-3 border-t flex items-center justify-between ${
+                    isPending ? 'border-amber-100' : 'border-emerald-100'
+                  }`}
+                >
+                  <button
+                    onClick={() => onNavigate(isPending ? 'correction' : 'trust', parcel.parcelUid)}
+                    className={`text-xs font-bold hover:underline flex items-center gap-1 ${
+                      isPending ? 'text-purple-700' : 'text-[#123A78]'
+                    }`}
+                  >
+                    {isPending ? 'Track Ferfar Notice' : 'Inspect Trust Dossier'} <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => onNavigate('map', parcel.parcelUid)}
+                      className="text-xs bg-[#0B7A3B] text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-[#086330] flex items-center gap-1 transition-colors shadow-2xs cursor-pointer"
+                      title="View Real Satellite Boundary & Corners"
+                    >
+                      <Layers className="w-3.5 h-3.5" />
+                      <span>GIS Satellite</span>
+                    </button>
+                    <button
+                      onClick={() => onNavigate(isPending ? 'trust' : 'timeline', parcel.parcelUid)}
+                      className="text-xs bg-[#123A78] text-white px-3 py-1.5 rounded-lg font-medium hover:bg-[#0e2c5d] transition-colors"
+                    >
+                      {isPending ? 'View Details' : '70-Yr Timeline'}
+                    </button>
+                  </div>
                 </div>
               </div>
-
-              <div className="mt-3 bg-white p-2.5 rounded-lg border border-emerald-100 flex items-center justify-between text-xs">
-                <span className="text-gray-600">AI Verification: 100% OCR Match & Zero Encroachment</span>
-                <span className="text-emerald-700 font-bold">Unencumbered</span>
-              </div>
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-emerald-100 flex items-center justify-between">
-              <button
-                onClick={() => onNavigate('trust', 'IN-MH-PUN-HAV-2024-00142-A')}
-                className="text-xs font-bold text-[#123A78] hover:underline flex items-center gap-1"
-              >
-                Inspect Trust Dossier <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => onNavigate('timeline', 'IN-MH-PUN-HAV-2024-00142-A')}
-                className="text-xs bg-[#123A78] text-white px-3 py-1.5 rounded-lg font-medium hover:bg-[#0e2c5d] transition-colors"
-              >
-                70-Yr Timeline
-              </button>
-            </div>
-          </div>
-
-          {/* Parcel Card 2 */}
-          <div className="border border-amber-200 bg-amber-50/40 rounded-xl p-4 flex flex-col justify-between">
-            <div>
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="text-xs font-bold text-amber-800 uppercase tracking-wider">
-                    Inherited Holding (Mutation Pending)
-                  </span>
-                  <h4 className="text-base font-bold text-gray-900 mt-0.5">
-                    Survey No. 88/4, Malegaon Budruk
-                  </h4>
-                  <p className="text-xs text-gray-600">
-                    Taluka: Baramati | District: Pune | Area: 2.10 Hectares (84 Gunthas)
-                  </p>
-                </div>
-                <div className="text-right">
-                  <span className="inline-flex items-center gap-1 bg-[#F39C12] text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-xs">
-                    <Clock className="w-3.5 h-3.5" /> Trust Score 68/100
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-3 bg-white p-2.5 rounded-lg border border-amber-100 flex items-center justify-between text-xs">
-                <span className="text-gray-600">Notice Period Lapsed. Tehsildar Sanction Pending.</span>
-                <span className="text-amber-800 font-bold">In Review</span>
-              </div>
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-amber-100 flex items-center justify-between">
-              <button
-                onClick={() => onNavigate('correction')}
-                className="text-xs font-bold text-purple-700 hover:underline flex items-center gap-1"
-              >
-                Track Ferfar Notice <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => onNavigate('trust', 'IN-MH-PUN-BAR-2023-00088-B')}
-                className="text-xs bg-[#123A78] text-white px-3 py-1.5 rounded-lg font-medium hover:bg-[#0e2c5d] transition-colors"
-              >
-                View Details
-              </button>
-            </div>
-          </div>
+            );
+          })}
         </div>
       </div>
 

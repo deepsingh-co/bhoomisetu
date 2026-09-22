@@ -363,7 +363,7 @@ export const LandIntelligenceGraphView: React.FC<LandIntelligenceGraphViewProps>
               <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-950 animate-fade-in">
                 <div className="flex items-center gap-1.5 font-bold text-amber-900 mb-1">
                   <CheckCircle2 className="w-4 h-4 text-[#0B7A3B]" />
-                  <span>Bhulekh AI Reasoning Output:</span>
+                  <span>BhoomiSetu AI Reasoning Output:</span>
                 </div>
                 <p className="leading-relaxed text-gray-800">{aiAnswer}</p>
               </div>

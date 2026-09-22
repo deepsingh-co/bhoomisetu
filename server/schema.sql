@@ -1,4 +1,4 @@
--- Bhulekh AI v3 - National Land Records Intelligence Platform
+-- BhoomiSetu - National Land Records Intelligence Platform
 -- PostgreSQL Enterprise Database Schema (NIC / MeitY Architecture Standard)
 -- Compliant with Digital India Land Records Modernization Programme (DILRMP)
 

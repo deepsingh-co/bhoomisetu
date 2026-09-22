@@ -71,7 +71,7 @@ export const HeroAndTrust: React.FC<HeroAndTrustProps> = ({
             </h1>
 
             <p className="text-base sm:text-lg text-[#5A6878] leading-relaxed max-w-2xl">
-              Production-grade identity and access governance for <strong>Bhulekh AI v3</strong>.
+              Production-grade identity and access governance for <strong>BhoomiSetu</strong>.
               Unified role-based authentication connecting Citizens, Patwaris, Verification Officers,
               and District Collectors for tamper-proof title intelligence and cadastral governance.
             </p>

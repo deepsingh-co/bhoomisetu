@@ -1,5 +1,5 @@
 -- ============================================================================
--- Bhulekh AI v3 - Module 3: ISRO x NIC GeoAI Intelligence Layer
+-- BhoomiSetu - Module 3: ISRO x NIC GeoAI Intelligence Layer
 -- PostgreSQL + PostGIS Schema Definition
 -- Government of India, Ministry of Rural Development & Department of Land Resources
 -- Inspired by ISRO Bhuvan, PM GatiShakti, and Digital India Land Records

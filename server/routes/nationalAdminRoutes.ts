@@ -36,7 +36,7 @@ const handleNationalSummary = (req: Request, res: Response) => {
 
   res.json({
     success: true,
-    portal: 'Bhulekh AI National Command Center',
+    portal: 'BhoomiSetu National Command Center',
     department: 'Department of Land Resources (DoLR), MoRD, Government of India',
     sessionTimestamp: new Date().toISOString(),
     aggregates,

@@ -143,6 +143,7 @@ export const CitizenPortalMasterView: React.FC<CitizenPortalMasterViewProps> = (
 
         {activeTab === 'map' && (
           <CitizenMiniGisMapView
+            parcelId={activeParcelId}
             onNavigate={handleNavigate}
             language={language}
           />

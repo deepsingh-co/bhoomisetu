@@ -217,6 +217,15 @@ export const MyLandPortfolioView: React.FC<MyLandPortfolioViewProps> = ({
                 </button>
 
                 <button
+                  onClick={() => onNavigate('map', parcel.parcelUid)}
+                  className="p-2 bg-[#0B7A3B] hover:bg-[#086330] text-white rounded-md transition-colors flex items-center gap-1 text-xs font-semibold"
+                  title="View Real Satellite Boundary & Corners"
+                >
+                  <Layers className="w-4 h-4" />
+                  <span className="hidden sm:inline">GIS Satellite</span>
+                </button>
+
+                <button
                   onClick={() => onNavigate('trust', parcel.parcelUid)}
                   className="flex-1 bg-white border border-[#123A78] hover:bg-blue-50 text-[#123A78] text-xs font-semibold py-2 rounded-md transition-colors text-center"
                 >

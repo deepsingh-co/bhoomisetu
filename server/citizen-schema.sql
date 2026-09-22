@@ -1,4 +1,4 @@
--- Bhulekh AI v3 — Citizen Portal & Land Intelligence Database Schema
+-- BhoomiSetu — Citizen Portal & Land Intelligence Database Schema
 -- Compatible with PostgreSQL 14+ / Cloud SQL / PostGIS
 
 CREATE TABLE IF NOT EXISTS citizen_profiles (

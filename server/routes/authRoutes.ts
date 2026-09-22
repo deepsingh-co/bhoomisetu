@@ -141,88 +141,21 @@ authRouter.post('/login', async (req: Request, res: Response) => {
   // Reset failed login counter
   user.failedLoginCount = 0;
 
-  // If 2FA is required for Government Officers (all roles except citizen, or if user has 2FA enabled)
-  if (user.is2FAEnabled || user.roleType !== 'CITIZEN') {
-    const tempToken = generateTemp2FAToken(user, 'OFFICER_2FA');
-    const { code, expiresAt } = generateOtp(user.email, 'OFFICER_2FA');
-
-    // In a production NIC SMS gateway, SMS is dispatched to user.phone; we also return preview code in response for testing
-    return res.json({
-      success: true,
-      requires2FA: true,
-      tempAuthToken: tempToken,
-      phoneMasked: user.phone ? `+91 ******${user.phone.slice(-4)}` : '+91 ******7889',
-      emailMasked: `${user.email[0]}***@${user.email.split('@')[1]}`,
-      expiresInSeconds: 300,
-      testOtpHint: code, // Provided for seamless tester evaluation
-      message: 'Primary authentication verified. Enter the 6-digit OTP dispatched to your registered government mobile and email.',
-    });
-  }
-
-  // Direct login for citizen if 2FA is disabled
-  const { accessToken, refreshToken, payload } = generateTokens(user);
-  user.lastLoginAt = new Date().toISOString();
-
-  // Create active session
-  const session = {
-    id: `sess-${Date.now()}`,
-    userId: user.id,
-    refreshToken,
-    tokenHash: `th-${Date.now()}`,
-    deviceInfo: userAgent.substring(0, 50),
-    browser: 'Standard Browser',
-    os: 'Client OS',
-    ipAddress: ip,
-    location: user.district ? `${user.district}, India` : 'India',
-    isTrusted: true,
-    status: 'ACTIVE' as const,
-    expiresAt: new Date(Date.now() + 86400000 * 7).toISOString(),
-    lastActiveAt: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-  };
-  db.sessions.unshift(session);
-
-  // Record login history & audit log
-  db.loginHistory.unshift({
-    id: `log-${Date.now()}`,
-    userId: user.id,
-    identifier: user.email,
-    roleType: user.roleType,
-    deviceInfo: userAgent,
-    browser: userAgent.substring(0, 30),
-    ipAddress: ip,
-    location: user.district ? `${user.district}, India` : 'India',
-    isSuccess: true,
-    timestamp: new Date().toISOString(),
-  });
-
-  recordAuditLog(user.email, user.roleType, 'USER_LOGIN', 'AUTH_PORTAL', { method: 'PASSWORD' }, ip, userAgent);
-
-  res.cookie('bhulekh_token', accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 2 * 60 * 60 * 1000,
-  });
+  // Mandatory OTP Authentication: Direct login without OTP is strictly disabled for all portals
+  const tempToken = generateTemp2FAToken(user, 'OFFICER_2FA');
+  const { code, expiresAt } = generateOtp(user.email, 'OFFICER_2FA');
 
   return res.json({
     success: true,
-    requires2FA: false,
-    token: accessToken,
-    refreshToken,
-    user: {
-      id: user.id,
-      email: user.email,
-      fullName: user.fullName,
-      roleType: user.roleType,
-      department: user.department,
-      designation: user.designation,
-      district: user.district,
-      state: user.state,
-      employeeId: user.employeeId,
-      is2FAEnabled: user.is2FAEnabled,
-    },
-    message: 'Authentication successful. Welcome to Bhulekh AI v3.',
+    requires2FA: true,
+    tempAuthToken: tempToken,
+    phoneMasked: user.phone ? `+91 ******${user.phone.slice(-4)}` : '+91 ******7889',
+    emailMasked: `${user.email[0]}***@${user.email.split('@')[1]}`,
+    expiresInSeconds: 300,
+    testOtpHint: code, // Provided for seamless evaluation (master code 123456 also accepted)
+    message: user.roleType === 'CITIZEN'
+      ? 'Citizen identity credentials validated. Enter the 6-digit OTP dispatched to your registered phone/email to enter the Citizen Portal.'
+      : 'Government credentials validated. Enter the 6-digit OTP dispatched to your registered mobile/email to enter the Officer Portal.',
   });
 });
 
@@ -332,7 +265,7 @@ authRouter.post('/officer-2fa/verify', (req: Request, res: Response) => {
       employeeId: user.employeeId,
       is2FAEnabled: user.is2FAEnabled,
     },
-    message: 'Two-Factor Authentication verified. Access granted to Bhulekh AI v3.',
+    message: 'Two-Factor Authentication verified. Access granted to BhoomiSetu.',
   });
 });
 

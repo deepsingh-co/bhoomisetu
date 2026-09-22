@@ -197,7 +197,7 @@ export function recordAuditLog(
   resource: string,
   details?: Record<string, any>,
   ipAddress = '164.100.24.89',
-  userAgent = 'Bhulekh AI Government Gateway'
+  userAgent = 'BhoomiSetu Government Gateway'
 ) {
   db.auditLogs.unshift({
     id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,

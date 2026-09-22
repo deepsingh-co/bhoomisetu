@@ -80,7 +80,7 @@ export const GeoAiMasterView: React.FC<GeoAiMasterViewProps> = ({
               </span>
             </div>
             <h1 className="text-lg md:text-xl font-bold text-[#123A78] tracking-tight">
-              Bhulekh AI v3 — GeoAI Spatial Intelligence Platform (Module 3)
+              BhoomiSetu — GeoAI Spatial Intelligence Platform (Module 3)
             </h1>
             <p className="text-xs text-gray-600">
               Department of Land Resources (DoLR) • National Remote Sensing Centre (NRSC) • Bhuvan Cadastral 0.28m

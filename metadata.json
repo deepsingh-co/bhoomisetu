@@ -1,6 +1,6 @@
 {
-  "name": "Bhulekh AI v3 - Government Officer Dashboard & Land Records Intelligence",
-  "description": "National Land Records Intelligence Platform - Government of India, Department of Land Resources, NIC Officer Dashboard & AI Intelligence Engine",
-  "requestFramePermissions": ["camera", "microphone"],
+  "name": "BhoomiSetu - Government Land Intelligence & Citizen Trust Platform",
+  "description": "BhoomiSetu National Land Records Intelligence Platform - Government of India, Department of Land Resources, NIC Officer Dashboard & AI Intelligence Engine",
+  "requestFramePermissions": ["camera", "microphone", "geolocation"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

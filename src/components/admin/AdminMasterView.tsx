@@ -107,7 +107,7 @@ export const AdminMasterView: React.FC<AdminMasterViewProps> = ({ onBackToCitize
                 </span>
               </div>
               <h1 className="text-base sm:text-lg font-black text-[#123A78] tracking-tight leading-none mt-0.5">
-                Bhulekh AI v3 — National Cadastral Command Center
+                BhoomiSetu — National Cadastral Command Center
               </h1>
             </div>
           </div>
@@ -268,7 +268,7 @@ export const AdminMasterView: React.FC<AdminMasterViewProps> = ({ onBackToCitize
       <footer className="bg-white border-t border-gray-300 py-4 mt-12 text-xs text-gray-600">
         <div className="max-w-[1700px] mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div>
-            <strong>Bhulekh AI v3</strong> — National Cadastral Command Center. Developed by National
+            <strong>BhoomiSetu</strong> — National Cadastral Command Center. Developed by National
             Informatics Centre (NIC) for the Ministry of Rural Development & Land Resources, Government of
             India.
           </div>

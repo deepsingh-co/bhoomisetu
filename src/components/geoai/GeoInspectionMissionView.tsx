@@ -127,7 +127,7 @@ export const GeoInspectionMissionView: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <div>
                     <span className="text-[10px] text-blue-200 uppercase font-bold tracking-wider">
-                      Bhulekh GeoField v3
+                      BhoomiSetu GeoField
                     </span>
                     <h2 className="text-sm font-bold">Survey #{mockInspection.surveyNumber} Verification</h2>
                   </div>

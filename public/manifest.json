@@ -1,7 +1,7 @@
 {
-  "name": "Bhulekh AI v3 - Citizen Land Services Portal",
-  "short_name": "Bhulekh Citizen",
-  "description": "National Land Records Intelligence Portal - Government of India, Department of Land Resources & NIC",
+  "name": "BhoomiSetu - Citizen Land Services Portal",
+  "short_name": "BhoomiSetu",
+  "description": "BhoomiSetu National Land Records Intelligence Portal - Government of India, Department of Land Resources & NIC",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F5F7FA",

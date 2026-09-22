@@ -1,5 +1,5 @@
-// Bhulekh AI v3 Citizen Portal — Government of India Service Worker
-const CACHE_NAME = 'bhulekh-citizen-v3-cache';
+// BhoomiSetu Citizen Portal — Government of India Service Worker
+const CACHE_NAME = 'bhoomisetu-citizen-cache';
 const OFFLINE_URLS = [
   '/',
   '/index.html',
@@ -62,7 +62,7 @@ self.addEventListener('fetch', (event) => {
 // Push notification listener
 self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {};
-  const title = data.title || 'Bhulekh AI v3 — Citizen Notification';
+  const title = data.title || 'BhoomiSetu — Citizen Notification';
   const options = {
     body: data.message || 'Your land record verification status has been updated.',
     icon: '/assets/pwa-icon-192.png',

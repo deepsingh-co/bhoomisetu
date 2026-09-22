@@ -71,7 +71,7 @@ export const AuditLogsView: React.FC<AuditLogsViewProps> = ({ onBackToDashboard 
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Bhulekh_Audit_Log_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `BhoomiSetu_Audit_Log_${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
   };
 

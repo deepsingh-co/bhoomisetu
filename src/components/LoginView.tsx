@@ -3,6 +3,7 @@ import {
   Lock,
   UserCheck,
   Shield,
+  ShieldCheck,
   RefreshCw,
   AlertCircle,
   KeyRound,
@@ -18,6 +19,7 @@ import { RoleType, User } from '../types';
 
 interface LoginViewProps {
   language: Language;
+  securityNotice?: string | null;
   onLoginSuccess: (user: User, token: string) => void;
   onRequire2FA: (tempToken: string, phoneMasked: string, emailMasked: string, hint?: string) => void;
   onRequireCitizenOtp: (identifier: string, hint?: string) => void;
@@ -27,6 +29,7 @@ interface LoginViewProps {
 
 export const LoginView: React.FC<LoginViewProps> = ({
   language,
+  securityNotice,
   onLoginSuccess,
   onRequire2FA,
   onRequireCitizenOtp,
@@ -164,7 +167,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
       if (data.requires2FA) {
         onRequire2FA(data.tempAuthToken, data.phoneMasked, data.emailMasked, data.testOtpHint);
       } else {
-        onLoginSuccess(data.user, data.token);
+        onRequire2FA(data.tempAuthToken || 'temp-token', '+91 ******7889', officerIdentifier, data.testOtpHint || '123456');
       }
     } catch (err: any) {
       setErrorMessage('Network error communicating with Government Authentication Gateway.');
@@ -236,7 +239,11 @@ export const LoginView: React.FC<LoginViewProps> = ({
           return;
         }
 
-        onLoginSuccess(data.user, data.token);
+        if (data.requires2FA) {
+          onRequire2FA(data.tempAuthToken, data.phoneMasked, data.emailMasked, data.testOtpHint);
+        } else {
+          onRequireCitizenOtp(citizenEmail, data.testOtpHint || '123456');
+        }
       } catch (err) {
         setErrorMessage('Network error during citizen authentication.');
       } finally {
@@ -303,7 +310,7 @@ export const LoginView: React.FC<LoginViewProps> = ({
               </h2>
 
               <p className="text-xs sm:text-sm text-[#5A6878] leading-relaxed">
-                Bhulekh AI v3 is the unified national gateway for land records verification, cadastral analysis, and real-time title chain validation under the Ministry of Rural Development.
+                BhoomiSetu is the unified national gateway for land records verification, cadastral analysis, and real-time title chain validation under the Ministry of Rural Development.
               </p>
 
               {/* Security Mandate List */}
@@ -386,6 +393,17 @@ export const LoginView: React.FC<LoginViewProps> = ({
               </div>
 
               <div className="p-6 sm:p-8">
+                {/* Security Gate Notice */}
+                {securityNotice && (
+                  <div className="mb-5 p-3.5 bg-amber-50 border-l-4 border-amber-600 rounded-r-md text-xs sm:text-sm text-amber-900 flex items-start gap-2.5">
+                    <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold block">Authentication &amp; OTP Verification Required</span>
+                      <span>{securityNotice}</span>
+                    </div>
+                  </div>
+                )}
+
                 {/* Feedback Alerts */}
                 {errorMessage && (
                   <div className="mb-5 p-3 bg-red-50 border-l-4 border-[#B42318] rounded-r-md text-xs sm:text-sm text-[#B42318] flex items-center gap-2">

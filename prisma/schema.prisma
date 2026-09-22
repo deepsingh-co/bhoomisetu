@@ -1,4 +1,4 @@
-// Prisma Schema for Bhulekh AI v3 — Citizen Portal, Verification & Land Intelligence
+// Prisma Schema for BhoomiSetu — Citizen Portal, Verification & Land Intelligence
 // Compliant with Government of India, DILRMP & NIC Architecture
 
 datasource db {
@@ -262,4 +262,223 @@ model PortfolioParcel {
 
   @@unique([citizenId, parcelUid])
   @@map("portfolio_parcels")
+}
+
+// ==============================================================================
+// MODULE 6: AI INFRASTRUCTURE, BACKEND QUEUES & OBSERVABILITY TABLES
+// ==============================================================================
+
+enum JobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+  RETRYING
+  DEAD_LETTER
+}
+
+enum QueueType {
+  OCR_QUEUE
+  AI_QUEUE
+  FRAUD_QUEUE
+  GIS_QUEUE
+  REPORT_QUEUE
+  NOTIFICATION_QUEUE
+}
+
+enum StorageProvider {
+  MINIO
+  AWS_S3
+  LOCAL_FILESYSTEM
+  NIC_MEGHRAJ
+}
+
+model AiJob {
+  id               String    @id @default(uuid())
+  jobType          String    @map("job_type") // OCR, FRAUD_DETECTION, RAG_LEGAL, DISPUTE_RISK, SATELLITE_DIFF
+  modelName        String    @map("model_name") // llama3:8b, mistral:7b, paddleocr, trocr
+  promptInput      String    @map("prompt_input")
+  responseOutput   String?   @map("response_output")
+  confidenceScore  Float?    @map("confidence_score")
+  executionTimeMs  Int       @default(0) @map("execution_time_ms")
+  tokensUsed       Int       @default(0) @map("tokens_used")
+  gpuAccelerated   Boolean   @default(false) @map("gpu_accelerated")
+  status           JobStatus @default(QUEUED)
+  errorMessage     String?   @map("error_message")
+  retriesRemaining Int       @default(3) @map("retries_remaining")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  completedAt      DateTime? @map("completed_at")
+
+  @@index([jobType, status])
+  @@index([createdAt])
+  @@map("ai_jobs")
+}
+
+model Embedding {
+  id             String   @id @default(uuid())
+  collectionName String   @map("collection_name") // land_records, mutation_records, verification_notes, land_laws
+  entityId       String   @map("entity_id") // Parcel ULPIN or Law Reference
+  contentChunk   String   @map("content_chunk")
+  dimensions     Int      @default(384)
+  vectorId       String   @map("vector_id") // Qdrant point UUID
+  metadataJson   String   @map("metadata_json") // JSON metadata
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([collectionName, entityId])
+  @@map("embeddings")
+}
+
+model PromptTemplate {
+  id              String   @id @default(uuid())
+  templateKey     String   @unique @map("template_key") // OCR_EXTRACTION, VERIFICATION_AUDIT, FRAUD_DETECTION
+  title           String
+  description     String?
+  templateVersion String   @default("1.0.0") @map("template_version")
+  systemPrompt    String   @map("system_prompt")
+  userTemplate    String   @map("user_template")
+  inputVariables  String   @map("input_variables") // Comma-separated variable names
+  isActive        Boolean  @default(true) @map("is_active")
+  temperature     Float    @default(0.2)
+  maxTokens       Int      @default(2048) @map("max_tokens")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("prompt_templates")
+}
+
+model JobQueueLog {
+  id             String    @id @default(uuid())
+  queueName      QueueType @map("queue_name")
+  bullJobId      String    @map("bull_job_id")
+  payloadJson    String    @map("payload_json")
+  status         JobStatus @default(QUEUED)
+  attemptsMade   Int       @default(0) @map("attempts_made")
+  failedReason   String?   @map("failed_reason")
+  processingHost String?   @map("processing_host")
+  queuedAt       DateTime  @default(now()) @map("queued_at")
+  processedAt    DateTime? @map("processed_at")
+
+  @@index([queueName, status])
+  @@map("job_queue_logs")
+}
+
+model SystemHealth {
+  id                String   @id @default(uuid())
+  serviceName       String   @map("service_name") // OCR_WORKER, OLLAMA_AI, REDIS_CACHE, POSTGIS_DB, QDRANT
+  isHealthy         Boolean  @default(true) @map("is_healthy")
+  latencyMs         Int      @map("latency_ms")
+  cpuUsagePercent   Float    @map("cpu_usage_percent")
+  memoryUsageMb     Float    @map("memory_usage_mb")
+  activeConnections Int      @default(0) @map("active_connections")
+  queueDepth        Int      @default(0) @map("queue_depth")
+  checkedAt         DateTime @default(now()) @map("checked_at")
+
+  @@index([serviceName, checkedAt])
+  @@map("system_health")
+}
+
+model ApiLog {
+  id            String   @id @default(uuid())
+  endpointPath  String   @map("endpoint_path")
+  httpMethod    String   @map("http_method")
+  statusCode    Int      @map("status_code")
+  responseTime  Int      @map("response_time_ms")
+  ipAddress     String   @map("ip_address")
+  userRole      String?  @map("user_role")
+  userId        String?  @map("user_id")
+  traceId       String   @map("trace_id")
+  requestBytes  Int      @default(0) @map("request_bytes")
+  responseBytes Int      @default(0) @map("response_bytes")
+  timestamp     DateTime @default(now())
+
+  @@index([endpointPath, statusCode])
+  @@index([timestamp])
+  @@map("api_logs")
+}
+
+model ErrorLog {
+  id           String   @id @default(uuid())
+  serviceName  String   @map("service_name")
+  severity     String   @default("ERROR") // INFO, WARN, ERROR, CRITICAL
+  errorCode    String   @map("error_code")
+  errorMessage String   @map("error_message")
+  stackTrace   String?  @map("stack_trace")
+  contextJson  String?  @map("context_json")
+  resolved     Boolean  @default(false)
+  timestamp    DateTime @default(now())
+
+  @@index([serviceName, severity])
+  @@index([timestamp])
+  @@map("error_logs")
+}
+
+model FileStorage {
+  id               String          @id @default(uuid())
+  bucketName       String          @map("bucket_name")
+  storageKey       String          @unique @map("storage_key")
+  originalFilename String          @map("original_filename")
+  mimeType         String          @map("mime_type")
+  sizeBytes        BigInt          @map("size_bytes")
+  provider         StorageProvider @default(MINIO)
+  sha256Hash       String          @map("sha256_hash")
+  versionNumber    Int             @default(1) @map("version_number")
+  isEncrypted      Boolean         @default(true) @map("is_encrypted")
+  uploadedBy       String?         @map("uploaded_by")
+  uploadedAt       DateTime        @default(now()) @map("uploaded_at")
+
+  @@index([bucketName, sha256Hash])
+  @@map("file_storage")
+}
+
+model Configuration {
+  id          String   @id @default(uuid())
+  configKey   String   @unique @map("config_key")
+  configValue String   @map("config_value")
+  category    String   @default("GENERAL") // AI, SECURITY, GIS, QUEUE, SLA
+  description String?
+  isSecret    Boolean  @default(false) @map("is_secret")
+  updatedBy   String?  @map("updated_by")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("configurations")
+}
+
+model AgentExecutionLog {
+  id            String   @id @default(uuid())
+  agentType     String   @map("agent_type") // OCR_AGENT, GIS_AGENT, FRAUD_AGENT, LEGAL_AGENT, etc.
+  taskObjective String   @map("task_objective")
+  inputPayload  String   @map("input_payload")
+  outputResult  String   @map("output_result")
+  executionMs   Int      @map("execution_ms")
+  success       Boolean  @default(true)
+  timestamp     DateTime @default(now())
+
+  @@index([agentType, timestamp])
+  @@map("agent_execution_logs")
+}
+
+model VectorMetadata {
+  id             String   @id @default(uuid())
+  collection     String
+  totalVectors   Int      @default(0) @map("total_vectors")
+  vectorEngine   String   @default("Qdrant-HNSW") @map("vector_engine")
+  distanceMetric String   @default("Cosine") @map("distance_metric")
+  indexStatus    String   @default("READY") @map("index_status")
+  lastOptimized  DateTime @default(now()) @map("last_optimized")
+
+  @@map("vector_metadata")
+}
+
+model CacheMetadata {
+  id          String   @id @default(uuid())
+  cacheKey    String   @unique @map("cache_key")
+  tag         String   @default("PARCEL")
+  ttlSeconds  Int      @default(3600) @map("ttl_seconds")
+  sizeBytes   Int      @default(0) @map("size_bytes")
+  hitCount    Int      @default(0) @map("hit_count")
+  lastAccessed DateTime @default(now()) @map("last_accessed")
+  expiresAt   DateTime @map("expires_at")
+
+  @@index([tag, expiresAt])
+  @@map("cache_metadata")
 }
